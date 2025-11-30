@@ -1,16 +1,11 @@
-// scripts/generate-readme.js
-const fs = require('fs')
+import fs from 'fs'
 
 const template = `
-# My Project 🚀
+# Auto README
 
-Generated at: ${new Date().toISOString()}
-
-## Files
-${fs
-  .readdirSync('.')
-  .map((f) => `- ${f}`)
-  .join('\n')}
+Generated: ${new Date().toISOString()}
 `
 
 fs.writeFileSync('README.md', template)
+
+console.log('README updated ✔')
