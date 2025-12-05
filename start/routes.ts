@@ -1,6 +1,13 @@
 import router from '@adonisjs/core/services/router'
 import { middleware } from './kernel.js'
+import { Edge } from 'edge.js'
+import path from 'node:path'
 
+router.get('/', async () => {
+  const edge = new Edge({ cache: false })
+  edge.mount(path.join(process.cwd(), 'resources/views'))
+  return edge.render('home')
+})
 router.post('/register', '#controllers/auth_controller.register')
 router.post('/login', '#controllers/auth_controller.login')
 
