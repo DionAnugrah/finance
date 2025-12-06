@@ -231,3 +231,354 @@ if (logoutBtn) {
   })
 }
 document.querySelectorAll('.btn.warning')
+
+
+// Exchange Rate Elements
+const currencyConverterForm = document.getElementById('currency-converter-form')
+const conversionResult = document.getElementById('conversion-result')
+const viewRatesBtn = document.getElementById('view-rates-btn')
+const ratesModal = document.getElementById('rates-modal')
+const closeRatesModal = document.getElementById('close-rates-modal')
+const loadRatesBtn = document.getElementById('load-rates-btn')
+const baseCurrencySelect = document.getElementById('base-currency-select')
+const ratesContent = document.getElementById('rates-content')
+
+// Currency Converter
+if (currencyConverterForm) {
+  currencyConverterForm.addEventListener('submit', async (e) => {
+    e.preventDefault()
+
+    const token = localStorage.getItem('token')
+    const from = document.getElementById('from-currency').value
+    const to = document.getElementById('to-currency').value
+    const amount = parseFloat(document.getElementById('convert-amount').value)
+
+    if (!from || !to || !amount) return
+
+    try {
+      const res = await fetch(`${API_URL}/exchange-rates/convert`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ from, to, amount }),
+      })
+
+      if (!res.ok) throw new Error('Gagal konversi mata uang')
+
+      const data = await res.json()
+
+      if (data.success) {
+        displayConversionResult(data.data)
+      }
+    } catch (err) {
+      console.error('Error:', err)
+      alert('Gagal melakukan konversi mata uang')
+    }
+  })
+}
+
+function displayConversionResult(data) {
+  if (!conversionResult) return
+
+  document.getElementById('result-from-amount').textContent = `${data.amount} ${data.from}`
+  document.getElementById('result-to-amount').textContent = `${data.converted_amount.toLocaleString('id-ID', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} ${data.to}`
+  document.getElementById('result-rate').textContent = `1 ${data.from} = ${data.conversion_rate.toLocaleString('id-ID', {
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 4,
+  })} ${data.to}`
+  document.getElementById('result-last-update').textContent = `Last update: ${data.last_update}`
+
+  conversionResult.classList.remove('hidden')
+}
+
+// View All Rates
+if (viewRatesBtn) {
+  viewRatesBtn.addEventListener('click', () => {
+    if (ratesModal) {
+      ratesModal.classList.remove('hidden')
+    }
+  })
+}
+
+if (closeRatesModal) {
+  closeRatesModal.addEventListener('click', () => {
+    if (ratesModal) {
+      ratesModal.classList.add('hidden')
+    }
+  })
+}
+
+// Load Rates
+if (loadRatesBtn) {
+  loadRatesBtn.addEventListener('click', async () => {
+    const token = localStorage.getItem('token')
+    const baseCurrency = baseCurrencySelect.value
+
+    if (!ratesContent) return
+
+    ratesContent.innerHTML = '<p class="loading">Loading rates...</p>'
+
+    try {
+      const res = await fetch(`${API_URL}/exchange-rates/latest?base=${baseCurrency}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!res.ok) throw new Error('Gagal mengambil rates')
+
+      const data = await res.json()
+
+      if (data.success) {
+        displayRates(data.data.conversion_rates, baseCurrency)
+      }
+    } catch (err) {
+      console.error('Error:', err)
+      ratesContent.innerHTML = '<p class="text-center">Gagal memuat rates</p>'
+    }
+  })
+}
+
+function displayRates(rates, baseCurrency) {
+  if (!ratesContent) return
+
+  const popularCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'IDR', 'SGD', 'MYR', 'AUD', 'CNY', 'THB', 'KRW', 'INR']
+
+  const filteredRates = Object.entries(rates)
+    .filter(([currency]) => popularCurrencies.includes(currency))
+    .sort((a, b) => popularCurrencies.indexOf(a[0]) - popularCurrencies.indexOf(b[0]))
+
+  ratesContent.innerHTML = ''
+
+  filteredRates.forEach(([currency, rate]) => {
+    const rateCard = document.createElement('div')
+    rateCard.className = 'rate-card'
+    rateCard.innerHTML = `
+      <div class="rate-currency">${currency}</div>
+      <div class="rate-value">${rate.toLocaleString('id-ID', {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+      })}</div>
+    `
+    ratesContent.appendChild(rateCard)
+  })
+
+  if (filteredRates.length === 0) {
+    ratesContent.innerHTML = '<p class="text-center">Tidak ada rates tersedia</p>'
+  }
+}
+
+// Close modal when clicking outside
+if (ratesModal) {
+  ratesModal.addEventListener('click', (e) => {
+    if (e.target === ratesModal) {
+      ratesModal.classList.add('hidden')
+    }
+  })
+}
+
+
+// Stock Tracker Elements
+const stockSearchForm = document.getElementById('stock-search-form')
+const stockSearchInput = document.getElementById('stock-search-input')
+const searchResults = document.getElementById('search-results')
+const quickQuoteForm = document.getElementById('quick-quote-form')
+const quickSymbolInput = document.getElementById('quick-symbol-input')
+const stockQuoteResult = document.getElementById('stock-quote-result')
+const stockDetailModal = document.getElementById('stock-detail-modal')
+const closeStockModal = document.getElementById('close-stock-modal')
+const stockDetailContent = document.getElementById('stock-detail-content')
+
+// Stock Search
+if (stockSearchForm) {
+  stockSearchForm.addEventListener('submit', async (e) => {
+    e.preventDefault()
+
+    const token = localStorage.getItem('token')
+    const keywords = stockSearchInput.value.trim()
+
+    if (!keywords) return
+
+    if (searchResults) {
+      searchResults.innerHTML = '<p class="loading-spinner"></p>'
+      searchResults.classList.remove('hidden')
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/stocks/search?keywords=${encodeURIComponent(keywords)}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!res.ok) throw new Error('Gagal mencari saham')
+
+      const data = await res.json()
+
+      if (data.success && data.data.length > 0) {
+        displaySearchResults(data.data)
+      } else {
+        if (searchResults) {
+          searchResults.innerHTML = '<p class="text-center">Tidak ada hasil ditemukan</p>'
+        }
+      }
+    } catch (err) {
+      console.error('Error:', err)
+      if (searchResults) {
+        searchResults.innerHTML = '<p class="text-center">Gagal mencari saham</p>'
+      }
+    }
+  })
+}
+
+function displaySearchResults(results) {
+  if (!searchResults) return
+
+  searchResults.innerHTML = ''
+
+  results.forEach((result) => {
+    const item = document.createElement('div')
+    item.className = 'search-result-item'
+    item.innerHTML = `
+      <div class="search-result-symbol">${result.symbol}</div>
+      <div class="search-result-name">${result.name}</div>
+      <div class="search-result-meta">${result.type} • ${result.region} • ${result.currency}</div>
+    `
+    item.addEventListener('click', () => {
+      getStockQuote(result.symbol)
+    })
+    searchResults.appendChild(item)
+  })
+}
+
+// Quick Quote
+if (quickQuoteForm) {
+  quickQuoteForm.addEventListener('submit', async (e) => {
+    e.preventDefault()
+
+    const symbol = quickSymbolInput.value.trim().toUpperCase()
+    if (!symbol) return
+
+    await getStockQuote(symbol)
+  })
+}
+
+// Get Stock Quote
+async function getStockQuote(symbol) {
+  const token = localStorage.getItem('token')
+
+  if (stockQuoteResult) {
+    stockQuoteResult.innerHTML = '<p class="loading-spinner"></p>'
+    stockQuoteResult.classList.remove('hidden')
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/stocks/quote?symbol=${symbol}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!res.ok) throw new Error('Gagal mengambil quote')
+
+    const data = await res.json()
+
+    if (data.success) {
+      displayStockQuote(data.data)
+    }
+  } catch (err) {
+    console.error('Error:', err)
+    if (stockQuoteResult) {
+      stockQuoteResult.innerHTML =
+        '<p class="text-center">Gagal mengambil data saham. Pastikan symbol benar atau coba lagi nanti.</p>'
+    }
+  }
+}
+
+function displayStockQuote(quote) {
+  if (!stockQuoteResult) return
+
+  const isPositive = quote.change >= 0
+  const changeClass = isPositive ? 'positive' : 'negative'
+  const changeSymbol = isPositive ? '▲' : '▼'
+
+  stockQuoteResult.innerHTML = `
+    <div class="stock-card">
+      <div class="stock-header">
+        <div>
+          <div class="stock-symbol">${quote.symbol}</div>
+          <div class="stock-change ${changeClass}">
+            ${changeSymbol} ${quote.change.toFixed(2)} (${quote.changePercent})
+          </div>
+        </div>
+        <div class="stock-price">$${quote.price.toFixed(2)}</div>
+      </div>
+      
+      <div class="stock-details">
+        <div class="stock-detail-item">
+          <div class="stock-detail-label">Open</div>
+          <div class="stock-detail-value">$${quote.open.toFixed(2)}</div>
+        </div>
+        <div class="stock-detail-item">
+          <div class="stock-detail-label">High</div>
+          <div class="stock-detail-value">$${quote.high.toFixed(2)}</div>
+        </div>
+        <div class="stock-detail-item">
+          <div class="stock-detail-label">Low</div>
+          <div class="stock-detail-value">$${quote.low.toFixed(2)}</div>
+        </div>
+        <div class="stock-detail-item">
+          <div class="stock-detail-label">Previous Close</div>
+          <div class="stock-detail-value">$${quote.previousClose.toFixed(2)}</div>
+        </div>
+        <div class="stock-detail-item">
+          <div class="stock-detail-label">Volume</div>
+          <div class="stock-detail-value">${quote.volume.toLocaleString()}</div>
+        </div>
+        <div class="stock-detail-item">
+          <div class="stock-detail-label">Trading Day</div>
+          <div class="stock-detail-value">${quote.latestTradingDay}</div>
+        </div>
+      </div>
+    </div>
+  `
+
+  stockQuoteResult.classList.remove('hidden')
+}
+
+// Popular Stocks Chips
+document.querySelectorAll('.stock-chip').forEach((chip) => {
+  chip.addEventListener('click', () => {
+    const symbol = chip.getAttribute('data-symbol')
+    if (symbol) {
+      getStockQuote(symbol)
+      // Scroll to result
+      if (stockQuoteResult) {
+        stockQuoteResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+    }
+  })
+})
+
+// Close Stock Modal
+if (closeStockModal) {
+  closeStockModal.addEventListener('click', () => {
+    if (stockDetailModal) {
+      stockDetailModal.classList.add('hidden')
+    }
+  })
+}
+
+// Close modal when clicking outside
+if (stockDetailModal) {
+  stockDetailModal.addEventListener('click', (e) => {
+    if (e.target === stockDetailModal) {
+      stockDetailModal.classList.add('hidden')
+    }
+  })
+}

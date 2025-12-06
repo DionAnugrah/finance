@@ -1,4 +1,0 @@
-
-# Auto README
-
-Generated: 2025-11-30T08:04:32.553Z

@@ -24,5 +24,16 @@ router
     router.post('/transactions', '#controllers/transaction_controller.store')
     router.put('/transactions/:id', '#controllers/transaction_controller.update')
     router.delete('/transactions/:id', '#controllers/transaction_controller.destroy')
+
+    // Exchange Rate API routes
+    router.get('/exchange-rates/latest', '#controllers/exchange_rate_controller.latest')
+    router.post('/exchange-rates/convert', '#controllers/exchange_rate_controller.convert')
+    router.get('/exchange-rates/pair', '#controllers/exchange_rate_controller.pair')
+    router.get('/exchange-rates/codes', '#controllers/exchange_rate_controller.codes')
+
+    // Stock API routes
+    router.get('/stocks/quote', '#controllers/stock_controller.quote')
+    router.get('/stocks/search', '#controllers/stock_controller.search')
+    router.post('/stocks/quotes', '#controllers/stock_controller.multipleQuotes')
   })
   .use(auth)
