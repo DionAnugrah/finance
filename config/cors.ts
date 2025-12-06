@@ -1,4 +1,5 @@
 import { defineConfig } from '@adonisjs/cors'
+import env from '#start/env'
 
 const corsConfig = defineConfig({
   enabled: true,
@@ -11,6 +12,13 @@ const corsConfig = defineConfig({
     ) {
       return true
     }
+    
+    // Allow production domain
+    const appUrl = env.get('APP_URL', '')
+    if (appUrl && origin === appUrl) {
+      return true
+    }
+    
     return false
   },
   methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH'],
