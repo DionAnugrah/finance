@@ -36,7 +36,7 @@ router
   .prefix('/api')
   .use(auth)
 
-// Serve Vue.js app for all other routes (SPA)
-router.get('*', async ({ response }) => {
-  return response.download('resources/views/spa.html')
-})
+// // Serve Vue.js app for all other routes (SPA)
+// router.get('*', async ({ response }) => {
+//   return response.download('resources/views/spa.html')
+// })
