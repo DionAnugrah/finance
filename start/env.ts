@@ -20,4 +20,7 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   ALPHA_VANTAGE_API_KEY: Env.schema.string(),
   ALPHA_VANTAGE_API_URL: Env.schema.string(),
+
+  APP_URL: Env.schema.string.optional(),
+
 })
