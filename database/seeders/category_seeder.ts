@@ -5,7 +5,12 @@ import { BaseSeeder } from '@adonisjs/lucid/seeders'
 export default class extends BaseSeeder {
   async run() {
     // Ambil user pertama
-    const user = await User.firstOrFail()
+    const user = await User.first()
+
+    if (!user) {
+      console.log('⚠️  No users found. Please run UserSeeder first!')
+      return
+    }
 
     // Categories untuk Income
     const incomeCategories = [

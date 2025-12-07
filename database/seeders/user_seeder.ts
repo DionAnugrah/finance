@@ -7,6 +7,7 @@ export default class extends BaseSeeder {
     await User.updateOrCreate(
       { email: 'syahrul@finance.com' },
       {
+        name: 'Syahrul',
         email: 'syahrul@finance.com',
         password: '12345678',
       }
@@ -15,6 +16,7 @@ export default class extends BaseSeeder {
     await User.updateOrCreate(
       { email: 'dimas@finance.com' },
       {
+        name: 'Dimas',
         email: 'dimas@finance.com',
         password: '12345678',
       }
@@ -23,6 +25,7 @@ export default class extends BaseSeeder {
     await User.updateOrCreate(
       { email: 'alfin@finance.com' },
       {
+        name: 'Alfin',
         email: 'alfin@finance.com',
         password: '12345678',
       }
