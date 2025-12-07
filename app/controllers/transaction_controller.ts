@@ -1,5 +1,6 @@
 import { HttpContext } from '@adonisjs/core/http'
 import Transaction from '#models/transaction'
+import { DateTime } from 'luxon'
 
 export default class TransactionController {
   async index({ auth }: HttpContext) {
@@ -22,14 +23,15 @@ export default class TransactionController {
       return { error: 'amount must be a positive number' }
     }
 
-    let transactionDate: Date
+    let transactionDate: DateTime
     if (date) {
-      transactionDate = new Date(date)
-      if (transactionDate.toString() === 'Invalid Date') {
-        return { error: 'Invalid date format' }
+      // Parse date string to DateTime
+      transactionDate = DateTime.fromISO(date)
+      if (!transactionDate.isValid) {
+        return { error: 'Invalid date format. Use ISO format (YYYY-MM-DD)' }
       }
     } else {
-      transactionDate = new Date()
+      transactionDate = DateTime.now()
     }
 
     const transaction = await Transaction.create({
@@ -38,6 +40,7 @@ export default class TransactionController {
       amount: Number(amount),
       description: description || null,
       categoryId: categoryId ? Number(categoryId) : null,
+      date: transactionDate,
     })
 
     return transaction
