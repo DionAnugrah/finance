@@ -28,6 +28,9 @@
         </button>
       </form>
       <p v-if="error" class="error-text">{{ error }}</p>
+      <div class="auth-footer">
+        <p>Don't have an account? <router-link to="/register">Register here</router-link></p>
+      </div>
     </div>
   </div>
 </template>
@@ -163,5 +166,27 @@ input::placeholder {
   margin-top: 1rem;
   font-size: 0.9em;
   border-left: 3px solid #ff6b6b;
+}
+
+.auth-footer {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.auth-footer p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.auth-footer a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.auth-footer a:hover {
+  color: #764ba2;
 }
 </style>

@@ -11,8 +11,7 @@ const auth = middleware.auth({ guards: ['api'] })
 router
   .group(() => {
     // Categories
-    router.get('/categories', '#controllers/category_controller.index')
-    router.post('/categories', '#controllers/category_controller.store')
+    router.get('/categories', '#controllers/category_controller.store')
     router.put('/categories/:id', '#controllers/category_controller.update')
     router.delete('/categories/:id', '#controllers/category_controller.destroy')
 
