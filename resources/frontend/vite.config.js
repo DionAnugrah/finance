@@ -20,7 +20,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: '../../public/dist',
+    outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
       output: {
